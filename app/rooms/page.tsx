@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
+import { MapPin, SearchX, SlidersHorizontal } from "lucide-react";
 import { all } from "@/lib/db";
+import { Empty } from "@/components/ui";
+import { Reveal } from "@/components/Reveal";
 import { RoomCard, listingSelect, type RoomListing } from "@/components/RoomCard";
 import { FURNISHING, ROOM_TYPES } from "@/lib/constants";
+
+export const metadata: Metadata = { title: "Find rooms, flats & PGs" };
 
 export default async function RoomsPage({ searchParams }: PageProps<"/rooms">) {
   const sp = await searchParams;
@@ -30,10 +36,16 @@ export default async function RoomsPage({ searchParams }: PageProps<"/rooms">) {
   const rooms = await all<RoomListing>(`${listingSelect} WHERE ${where.join(" AND ")} ORDER BY r.created_at DESC LIMIT 60`, args);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="h1">Vacant rooms</h1>
-      <form className="card mt-5 grid gap-3 p-4 sm:grid-cols-5">
-        <input name="city" defaultValue={city} placeholder="City, area or building" className="input sm:col-span-2" />
+    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <p className="eyebrow">Explore</p>
+      <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-brand-950">
+        {city ? <>Rooms in <span className="text-brand-600">{city}</span></> : "Find your next room"}
+      </h1>
+      <form className="card mt-6 grid gap-3 p-3 sm:grid-cols-5">
+        <label className="relative sm:col-span-2">
+          <MapPin size={16} className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-brand-600" />
+          <input name="city" defaultValue={city} placeholder="City, area or building" className="input pl-10" />
+        </label>
         <select name="type" defaultValue={type} className="input">
           <option value="">Any type</option>
           {ROOM_TYPES.map((t) => (
@@ -48,16 +60,28 @@ export default async function RoomsPage({ searchParams }: PageProps<"/rooms">) {
         </select>
         <div className="flex gap-2">
           <input name="max" type="number" min={0} step={500} defaultValue={maxRent || ""} placeholder="Max rent ₹" className="input" />
-          <button className="btn btn-primary">Go</button>
+          <button className="btn btn-primary" aria-label="Apply filters">
+            <SlidersHorizontal size={16} />
+          </button>
         </div>
       </form>
 
-      <p className="muted mt-6">{rooms.length} room(s) found</p>
-      <div className="mt-3 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {rooms.map((r) => (
-          <RoomCard key={r.id} room={r} />
-        ))}
-      </div>
+      <p className="mt-8 text-sm text-slate-500">
+        <span className="font-semibold text-slate-800">{rooms.length}</span> {rooms.length === 1 ? "room" : "rooms"} available
+      </p>
+      {rooms.length === 0 ? (
+        <div className="mt-4">
+          <Empty title="No rooms match yet" hint="Try another area, a higher budget or fewer filters. New rooms are added every day." href="/rooms" cta="Clear filters" icon={SearchX} />
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {rooms.map((r, i) => (
+            <Reveal key={r.id} delay={(i % 3) * 80}>
+              <RoomCard room={r} />
+            </Reveal>
+          ))}
+        </div>
+      )}
     </main>
   );
 }

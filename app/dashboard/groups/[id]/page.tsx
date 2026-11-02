@@ -4,6 +4,7 @@ import { all, get } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { canAccessGroup } from "@/lib/groups";
 import { addMember, deleteGroup, postMessage, removeMember } from "@/lib/actions/groups";
+import { Megaphone } from "lucide-react";
 import { dateTime } from "@/lib/format";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { SubmitButton } from "@/components/SubmitButton";
@@ -59,15 +60,15 @@ export default async function GroupPage({ params }: PageProps<"/dashboard/groups
                 return (
                   <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
+                      className={`max-w-[80%] animate-fade-up rounded-2xl px-4 py-2 text-sm ${
                         m.is_announcement
-                          ? "border border-amber-200 bg-amber-50 text-amber-900"
+                          ? "border border-marigold-200 bg-marigold-50 text-slate-900"
                           : mine
-                            ? "bg-brand-600 text-white"
-                            : "bg-slate-100 text-slate-800"
+                            ? "rounded-br-md bg-brand-700 text-white"
+                            : "rounded-bl-md bg-slate-100 text-slate-800"
                       }`}
                     >
-                      {m.is_announcement ? <p className="mb-1 text-xs font-bold uppercase tracking-wide">📢 Notice</p> : null}
+                      {m.is_announcement ? <p className="mb-1 flex items-center gap-1 text-xs font-bold tracking-wide uppercase"><Megaphone size={13} /> Notice</p> : null}
                       {!mine && (
                         <p className="text-xs font-semibold opacity-70">
                           {m.sender_name}

@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { BedDouble, ChevronLeft, Droplets, IndianRupee, Lock, MapPin, Ruler, Sofa, Sparkles, Wrench, Zap } from "lucide-react";
 import { notFound } from "next/navigation";
 import { all, get } from "@/lib/db";
 import { currentUser } from "@/lib/auth";
@@ -15,6 +17,18 @@ type Room = {
   electricity_rate: number; water_charge: number; maintenance_charge: number;
   owner_id: number; owner_name: string;
 };
+
+export async function generateMetadata({ params }: PageProps<"/rooms/[id]">): Promise<Metadata> {
+  const room = await get<{ title: string; rent: number; city: string; status: string }>(
+    "SELECT r.title, r.rent, r.status, p.city FROM rooms r JOIN properties p ON p.id = r.property_id WHERE r.id = ?",
+    [Number((await params).id)],
+  );
+  if (!room || room.status === "unlisted") return { title: "Room not found" };
+  return {
+    title: `${room.title}${room.city ? `, ${room.city}` : ""}`,
+    description: `${room.title} for ${inr(room.rent)}/month${room.city ? ` in ${room.city}` : ""}. See photos and apply online.`,
+  };
+}
 
 export default async function RoomPage({ params, searchParams }: PageProps<"/rooms/[id]">) {
   const { id } = await params;
@@ -40,9 +54,9 @@ export default async function RoomPage({ params, searchParams }: PageProps<"/roo
   const amenities = room.amenities.split(",").map((a) => a.trim()).filter(Boolean);
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
-      <Link href="/rooms" className="text-sm text-brand-600 hover:underline">
-        ← All rooms
+    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      <Link href="/rooms" className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
+        <ChevronLeft size={16} /> All rooms
       </Link>
       <Notice text={typeof sp.error === "string" ? sp.error : undefined} tone="error" />
 
@@ -50,25 +64,29 @@ export default async function RoomPage({ params, searchParams }: PageProps<"/roo
         <div>
           <Gallery imageIds={images.map((i) => i.id)} title={room.title} />
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <h1 className="h1">{room.title}</h1>
+            <h1 className="font-display text-3xl font-semibold tracking-tight text-brand-950 sm:text-4xl">{room.title}</h1>
             <StatusBadge status={room.status} />
           </div>
-          <p className="muted mt-1">
+          <p className="mt-2 flex items-center gap-1.5 text-sm text-slate-500">
+            <MapPin size={15} className="text-brand-600" />
             {room.property_name}
             {room.address && ` · ${room.address}`}
             {room.city && `, ${room.city}`}
           </p>
 
           <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {[
-              ["Type", room.room_type],
-              ["Furnishing", room.furnishing],
-              ["Area", room.area_sqft ? `${room.area_sqft} sq ft` : "—"],
-              ["Deposit", inr(room.deposit)],
-            ].map(([k, v]) => (
-              <div key={k} className="card p-3">
-                <dt className="text-xs text-slate-500">{k}</dt>
-                <dd className="font-medium">{v}</dd>
+            {(
+              [
+                ["Type", room.room_type, BedDouble],
+                ["Furnishing", room.furnishing, Sofa],
+                ["Area", room.area_sqft ? `${room.area_sqft} sq ft` : "—", Ruler],
+                ["Deposit", inr(room.deposit), Lock],
+              ] as const
+            ).map(([k, v, Icon]) => (
+              <div key={k} className="card p-4">
+                <Icon size={18} className="text-brand-600" />
+                <dt className="mt-2 text-xs text-slate-500">{k}</dt>
+                <dd className="font-semibold">{v}</dd>
               </div>
             ))}
           </dl>
@@ -77,10 +95,10 @@ export default async function RoomPage({ params, searchParams }: PageProps<"/roo
 
           {amenities.length > 0 && (
             <div className="mt-6">
-              <h2 className="font-semibold">Amenities</h2>
+              <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Sparkles size={18} className="text-marigold-500" /> Amenities</h2>
               <div className="mt-2 flex flex-wrap gap-2">
                 {amenities.map((a) => (
-                  <span key={a} className="badge bg-brand-50 text-brand-700">
+                  <span key={a} className="rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-sm text-brand-800">
                     {a}
                   </span>
                 ))}
@@ -89,19 +107,19 @@ export default async function RoomPage({ params, searchParams }: PageProps<"/roo
           )}
 
           <div className="card mt-6 p-4">
-            <h2 className="font-semibold">Monthly charges</h2>
-            <ul className="mt-2 space-y-1 text-sm text-slate-700">
-              <li>Rent: {inr(room.rent)}</li>
-              <li>Electricity: ₹{room.electricity_rate} per unit (as per meter)</li>
-              {room.water_charge > 0 && <li>Water: {inr(room.water_charge)}</li>}
-              {room.maintenance_charge > 0 && <li>Maintenance: {inr(room.maintenance_charge)}</li>}
+            <h2 className="font-display text-lg font-semibold">Monthly charges</h2>
+            <ul className="mt-3 divide-y divide-slate-100 text-sm text-slate-700">
+              <li className="flex items-center justify-between py-2"><span className="flex items-center gap-2"><IndianRupee size={15} className="text-brand-600" /> Rent</span><b>{inr(room.rent)}</b></li>
+              <li className="flex items-center justify-between py-2"><span className="flex items-center gap-2"><Zap size={15} className="text-marigold-500" /> Electricity</span><span>₹{room.electricity_rate} / unit (meter)</span></li>
+              {room.water_charge > 0 && <li className="flex items-center justify-between py-2"><span className="flex items-center gap-2"><Droplets size={15} className="text-sky-500" /> Water</span><span>{inr(room.water_charge)}</span></li>}
+              {room.maintenance_charge > 0 && <li className="flex items-center justify-between py-2"><span className="flex items-center gap-2"><Wrench size={15} className="text-slate-500" /> Maintenance</span><span>{inr(room.maintenance_charge)}</span></li>}
             </ul>
           </div>
         </div>
 
         <aside className="lg:sticky lg:top-20 lg:self-start">
-          <div className="card p-5">
-            <p className="text-3xl font-bold text-brand-700">
+          <div className="card overflow-hidden p-6 shadow-[0_30px_60px_-30px_rgba(14,82,76,0.45)]">
+            <p className="font-display text-4xl font-semibold text-brand-800">
               {inr(room.rent)}
               <span className="text-base font-normal text-slate-500"> / month</span>
             </p>

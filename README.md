@@ -1,4 +1,6 @@
-# Rents Manager
+# Basera
+
+*Rooms, rent & residents — sorted.*
 
 A platform for flat / room / PG owners and tenants:
 

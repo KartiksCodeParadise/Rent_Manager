@@ -3,7 +3,8 @@ import { all, get } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { dateTime, inr } from "@/lib/format";
 import { smsProvider } from "@/lib/sms";
-import { PageHeader, Stat } from "@/components/ui";
+import { BedDouble, Bell, CircleCheck, FileText, IndianRupee, Plus, Send, Users, Wrench } from "lucide-react";
+import { Empty, PageHeader, Stat } from "@/components/ui";
 
 export default async function Overview() {
   const user = await requireUser();
@@ -32,13 +33,14 @@ export default async function Overview() {
           subtitle="Here is what needs your attention."
           action={
             <Link href="/dashboard/properties" className="btn btn-primary">
-              + Add room
+              <Plus size={16} /> Add room
             </Link>
           }
         />
         {s.rooms === 0 && (
-          <div className="card mb-6 border-brand-100 bg-brand-50 p-5">
-            <h2 className="font-semibold">Get started in 3 steps</h2>
+          <div className="card mb-6 border-brand-100 bg-gradient-to-br from-brand-50 to-marigold-50 p-6">
+            <p className="eyebrow">Welcome to Basera</p>
+            <h2 className="mt-1 font-display text-xl font-semibold">Get started in 3 steps</h2>
             <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-700">
               <li>Add your building or flat as a property (set electricity rate, water & maintenance).</li>
               <li>Add rooms with photos and rent — vacant rooms appear on the public listing.</li>
@@ -47,13 +49,13 @@ export default async function Overview() {
           </div>
         )}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label="Rooms (vacant)" value={`${s.rooms} (${s.vacant})`} href="/dashboard/properties" />
-          <Stat label="Pending applications" value={s.apps} href="/dashboard/applications" />
-          <Stat label="Active tenants" value={s.tenants} href="/dashboard/tenants" />
-          <Stat label="Open requests" value={s.requests} href="/dashboard/requests" />
-          <Stat label="Outstanding dues" value={inr(s.due)} href="/dashboard/bills" />
-          <Stat label="Payments to confirm" value={s.claimed} href="/dashboard/bills?status=claimed" />
-          <Stat label="SMS mode" value={<span className="text-base">{smsProvider === "log" ? "Outbox only" : smsProvider}</span>} href="/dashboard/sms" />
+          <Stat label="Rooms (vacant)" value={`${s.rooms} (${s.vacant})`} href="/dashboard/properties" icon={BedDouble} />
+          <Stat label="Pending applications" value={s.apps} href="/dashboard/applications" icon={FileText} tone="marigold" />
+          <Stat label="Active tenants" value={s.tenants} href="/dashboard/tenants" icon={Users} />
+          <Stat label="Open requests" value={s.requests} href="/dashboard/requests" icon={Wrench} tone="marigold" />
+          <Stat label="Outstanding dues" value={inr(s.due)} href="/dashboard/bills" icon={IndianRupee} tone="red" />
+          <Stat label="Payments to confirm" value={s.claimed} href="/dashboard/bills?status=claimed" icon={CircleCheck} />
+          <Stat label="SMS mode" value={<span className="text-base">{smsProvider === "log" ? "Outbox only" : smsProvider}</span>} href="/dashboard/sms" icon={Send} tone="slate" />
         </div>
         <RecentActivity items={recent} />
       </div>
@@ -77,17 +79,18 @@ export default async function Overview() {
     <div>
       <PageHeader title={`Hello, ${user.name.split(" ")[0]}`} subtitle={tenancy ? `${tenancy.title} · ${tenancy.property_name}` : "You have not moved in anywhere yet."} />
       {!tenancy && (
-        <div className="card mb-6 p-5">
-          <p className="text-slate-700">Browse vacant rooms with photos and apply in one click.</p>
+        <div className="card mb-6 bg-gradient-to-br from-brand-50 to-marigold-50 p-6">
+          <p className="eyebrow">Welcome to Basera</p>
+          <p className="mt-1 font-display text-xl font-semibold">Browse vacant rooms with photos and apply in one click.</p>
           <Link href="/rooms" className="btn btn-primary mt-3">
             Find a room
           </Link>
         </div>
       )}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Stat label="Amount due" value={inr(s.due)} href="/dashboard/bills" />
-        <Stat label="Pending applications" value={s.apps} href="/dashboard/applications" />
-        <Stat label="Open requests" value={s.requests} href="/dashboard/requests" />
+        <Stat label="Amount due" value={inr(s.due)} href="/dashboard/bills" icon={IndianRupee} tone={s.due > 0 ? "red" : "brand"} />
+        <Stat label="Pending applications" value={s.apps} href="/dashboard/applications" icon={FileText} tone="marigold" />
+        <Stat label="Open requests" value={s.requests} href="/dashboard/requests" icon={Wrench} />
       </div>
       <RecentActivity items={recent} />
     </div>
@@ -97,13 +100,13 @@ export default async function Overview() {
 function RecentActivity({ items }: { items: { id: number; title: string; body: string; link: string; created_at: string }[] }) {
   return (
     <div className="mt-8">
-      <h2 className="mb-3 font-semibold">Recent updates</h2>
+      <h2 className="mb-3 font-display text-lg font-semibold">Recent updates</h2>
       {items.length === 0 ? (
-        <p className="muted">Nothing yet.</p>
+        <Empty title="Nothing yet" hint="Updates about applications, bills and requests will appear here." icon={Bell} />
       ) : (
         <ul className="card divide-y divide-slate-100">
           {items.map((n) => (
-            <li key={n.id} className="p-4">
+            <li key={n.id} className="p-4 transition hover:bg-slate-50">
               <Link href={n.link || "/dashboard/notifications"} className="block hover:text-brand-600">
                 <p className="font-medium">{n.title}</p>
                 {n.body && <p className="muted">{n.body}</p>}

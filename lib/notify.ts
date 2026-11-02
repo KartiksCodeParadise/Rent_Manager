@@ -36,7 +36,7 @@ export async function notify(userIds: number | number[], n: Notice) {
     `SELECT id, phone FROM users WHERE id IN (${placeholders}) AND phone != '' AND sms_opt_in = 1`,
     ids,
   );
-  const text = `Rents Manager: ${n.title}${n.body ? ` - ${n.body}` : ""}${n.link ? ` ${appUrl()}${n.link}` : ""}`.slice(0, 450);
+  const text = `Basera: ${n.title}${n.body ? ` - ${n.body}` : ""}${n.link ? ` ${appUrl()}${n.link}` : ""}`.slice(0, 450);
 
   // SMS gateways can be slow; send after the response so the page stays fast.
   after(async () => {
