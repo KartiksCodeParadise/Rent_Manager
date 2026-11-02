@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Heart } from "lucide-react";
 import { BRAND, Logo } from "./Logo";
-import { DeveloperCredits } from "./DeveloperCredits";
+import { DeveloperCredit } from "./DeveloperCredit";
 
 const columns: [string, [string, string][]][] = [
   [
@@ -51,14 +50,11 @@ export function SiteFooter() {
           </div>
         ))}
       </div>
-      <DeveloperCredits />
+      <DeveloperCredit siteName={BRAND.name} />
       <div className="relative border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-6 text-xs text-brand-200/70 sm:flex-row sm:px-6">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-3 px-4 py-6 text-xs text-brand-200/70 sm:flex-row sm:px-6">
           <p>
             © {new Date().getFullYear()} {BRAND.name}. All rights reserved.
-          </p>
-          <p className="flex flex-wrap items-center justify-center gap-1.5 text-center">
-            Made with <Heart size={13} className="fill-marigold-400 text-marigold-400" /> in India
           </p>
         </div>
       </div>
